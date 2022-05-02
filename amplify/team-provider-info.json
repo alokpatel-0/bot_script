@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-crasinglebundle-dev-123833-authRole",
+      "UnauthRoleArn": "arn:aws:iam::357382330082:role/amplify-crasinglebundle-dev-123833-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::357382330082:role/amplify-crasinglebundle-dev-123833-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-crasinglebundle-dev-123833-deployment",
+      "UnauthRoleName": "amplify-crasinglebundle-dev-123833-unauthRole",
+      "StackName": "amplify-crasinglebundle-dev-123833",
+      "StackId": "arn:aws:cloudformation:us-east-1:357382330082:stack/amplify-crasinglebundle-dev-123833/b035ce20-c9e6-11ec-a213-125be11a2f29",
+      "AmplifyAppId": "d2erqk9epgmp7v"
+    },
+    "categories": {
+      "auth": {
+        "crasinglebundleb1043bfe": {}
+      }
+    }
+  }
+}
