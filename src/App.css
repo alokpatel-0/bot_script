@@ -1,106 +1,153 @@
+.open-button {
+  background-color: rgb(255, 255, 255);
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  position: fixed;
+  bottom: 10px;
+  right: 0px;
+  width: 50px;
+}
+
 .App {
-  box-sizing: border-box;
-
+  font-family: sans-serif;
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+  max-width: 365px;
+  padding: 10px;
+  padding-top: 0px;
+  padding-left: 0px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 555px;
+  position: fixed;
+  right: 85px;
+  bottom: 30px;
+  width: 365px;
+  box-sizing: border-box;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 0 4px 8px rgba(0, 0, 0, 0.28);
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  color: rgb(0, 0, 0);
+  font-size: 13px;
+  font-family: "Roboto";
+  font-weight: 500;
+  color: #f3f3f3;
+  height: 43px;
+  width: 366px;
+  background: #42a5f5;
+  border-radius: 2px;
+  padding-top: 1px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 0 4px 8px rgba(0, 0, 0, 0.28);
 }
 
-.App-link {
-  color: #61dafb;
+.text {
+  width: fit-content;
+  max-width: 200px;
+  margin-left: auto;
+  padding: 3px;
+  border-radius: 4px;
+  background: #42a5f5;
+  color: #eceff1;
+  display: block;
+  font-size: 0.875rem;
+  margin-right: 33px;
+  word-break: break-word;
+  word-wrap: break-word;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.bottext {
+  width: fit-content;
+  max-width: 200px;
+  margin: 8px;
+  padding: 3px;
+  border-radius: 4px;
+  display: block;
+  background: rgba(0, 0, 0, 0.03);
+  color: #666;
+  font-size: 0.875rem;
+  margin-top: 8px;
+  margin-left: 40px;
+  word-break: break-word;
+  word-wrap: break-word;
 }
 
-.open-button {
-  background-color: rgb(33, 33, 249);
-  color: #fff;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
-  opacity: 0.8;
-  position: fixed;
-  bottom: 23px;
-  right: 28px;
-  width: 28px;
-  height: 28px;
+form {
   display: flex;
-  text-align: center;
-  border-radius: 50%;
-}
-
-.chat-popup {
-  position: fixed;
-  bottom: 0;
-  right: 15px;
-  border: 3px solid #f1f1f1;
-  z-index: 9;
-}
-
-.form-container {
-  max-width: 300px;
-  padding: 10px;
-  background-color: white;
-}
-
-.form-container textarea {
   width: 100%;
-  padding: 15px;
-  margin: 5px 0 22px 0;
-  border: none;
-  background: #f1f1f1;
-  resize: none;
-  min-height: 200px;
+  justify-content: space-between;
+  margin: 0 auto 40px;
+  position: relative;
+  top: 0px;
+  /* margin-top: 0px; */
 }
 
-.form-container textarea:focus {
-  background-color: #ddd;
+.textInput {
+  border: none;
+  background: transparent;
+  padding: 0.8em;
   outline: none;
-}
-
-.form-container .btn {
-  background-color: #04aa6d;
-  color: white;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
+  color: #433838;
   width: 100%;
-  margin-bottom: 10px;
-  opacity: 0.8;
 }
 
-.form-container .cancel {
-  background-color: red;
+.chatMessages {
+  position: absolute;
+  top: 46px;
+  width: 365px;
+  overflow-y: auto;
+  max-height: 470px;
+  min-height: 385px;
+}
+.Input {
+  width: 364px;
+  display: inline-block;
+  text-align: center;
+  background: #fff;
+  border-top: 2px solid #979797;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  height: 27px;
 }
 
-.form-container .btn:hover,
-.open-button:hover {
-  opacity: 1;
+.sendbutton {
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+  margin-top: 3px;
+  /* margin-left: 10px; */
+}
+
+.profileImage {
+  border-radius: 150px;
+  width: 33px;
+  position: absolute;
+  left: 6px;
+}
+
+.userImage {
+  border-radius: 150px;
+  width: 33px;
+  position: absolute;
+  right: 0px;
+  margin-top: -29px;
+}
+.responseDiv {
+  display: flex;
+  flex-flow: column;
+  max-width: 160px;
+}
+
+.userDiv {
+  display: flex;
+  flex-flow: column;
+  max-width: 360px;
+  margin-top: 11px;
 }

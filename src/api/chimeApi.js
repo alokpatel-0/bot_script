@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT-0
 
 // import routes from '../constants/routes';
-import appConfig from "./aws_config";
+import appConfig from "../config/aws_config";
 // eslint-disable-next-line no-unused-vars
 import * as ChimeIdentity from "aws-sdk/clients/chimesdkidentity";
 import * as ChimeMessaging from "aws-sdk/clients/chimesdkmessaging";
@@ -369,7 +369,7 @@ async function updateChannel(channelArn, name, mode, metadata, userId) {
 }
 
 async function listChannelMembershipsForAppInstanceUser(userId) {
-  console.log("listChannelMembershipsForAppInstanceUser called");
+  console.log("listChannelMembershipsForAppInstanceUser called id", userId);
   const chimeBearerArn = createMemberArn(userId);
 
   const params = {

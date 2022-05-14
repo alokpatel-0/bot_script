@@ -1,19 +1,19 @@
 {
   "dev": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-crasinglebundle-dev-123833-authRole",
-      "UnauthRoleArn": "arn:aws:iam::357382330082:role/amplify-crasinglebundle-dev-123833-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::357382330082:role/amplify-crasinglebundle-dev-123833-authRole",
+      "AuthRoleName": "amplify-crasinglebundle-dev-100053-authRole",
+      "UnauthRoleArn": "arn:aws:iam::912610009059:role/amplify-crasinglebundle-dev-100053-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::912610009059:role/amplify-crasinglebundle-dev-100053-authRole",
       "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-crasinglebundle-dev-123833-deployment",
-      "UnauthRoleName": "amplify-crasinglebundle-dev-123833-unauthRole",
-      "StackName": "amplify-crasinglebundle-dev-123833",
-      "StackId": "arn:aws:cloudformation:us-east-1:357382330082:stack/amplify-crasinglebundle-dev-123833/b035ce20-c9e6-11ec-a213-125be11a2f29",
-      "AmplifyAppId": "d2erqk9epgmp7v"
+      "DeploymentBucketName": "amplify-crasinglebundle-dev-100053-deployment",
+      "UnauthRoleName": "amplify-crasinglebundle-dev-100053-unauthRole",
+      "StackName": "amplify-crasinglebundle-dev-100053",
+      "StackId": "arn:aws:cloudformation:us-east-1:912610009059:stack/amplify-crasinglebundle-dev-100053/fe670280-cb62-11ec-8109-0eadaa71751f",
+      "AmplifyAppId": "d2xtzvxqc24wxt"
     },
     "categories": {
       "auth": {
-        "crasinglebundleb1043bfe": {}
+        "crasinglebundle145075c6": {}
       }
     }
   }
