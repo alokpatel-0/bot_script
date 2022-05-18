@@ -8,7 +8,7 @@ const Input = ({ onSendMessage }) => {
     e.preventDefault();
     onSendMessage({
       Content: messageVal,
-      Sender: { Name: "nurse" },
+      Sender: { Name: "Anonymous" },
     });
     setMessageVal("");
   };

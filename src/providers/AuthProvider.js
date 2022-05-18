@@ -132,11 +132,12 @@ const AuthProvider = ({ children }) => {
   const userSignIn = async (username, password) => {
     console.log("SignInCalled", username, password);
     return Auth.signIn({ username, password })
-      .then(
+      .then(async (ele) => {
+        await getAwsCredentialsFromCognito();
         setAuthenticatedUserFromCognito().then((val) => {
           return val;
-        })
-      )
+        });
+      })
       .catch((err) => {
         console.log("step 1", err);
         return err;

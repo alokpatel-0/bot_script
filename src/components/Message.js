@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 import React, { useEffect } from "react";
 
-const Messages = ({ messages }) => {
+const Messages = ({ messages, isAuthenticated }) => {
   const scrollToBottom = () => {
     this.messagesEnd.scrollIntoView({ behavior: "smooth" });
   };
@@ -11,9 +11,8 @@ const Messages = ({ messages }) => {
   }, [messages]);
 
   const renderMessage = (message) => {
-    const { Content } = message;
-    const { Name } = message.Sender;
-    console.log("...........", message, Name);
+    const Content = message?.Content;
+    const Name = message?.Sender?.Name;
     return (
       <>
         {" "}

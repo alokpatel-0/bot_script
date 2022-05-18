@@ -22,6 +22,7 @@ import {
   useChatChannelState,
   useChatMessagingState,
 } from "./providers/ChatMessagesProvider";
+import { handleSendMessageToPatient } from "./api/api";
 
 const App = () => {
   let _identityClient;
@@ -34,6 +35,7 @@ const App = () => {
   const [currentChannelList, setCurrentChannelList] = useState([]);
   const [activeCurrentChannel, setActiveCurrentChannel] = useState([]);
   const [userlist, setUserList] = useState([]);
+  const [slots, setSlots] = useState({ phoneNumber: "", Otp: "" });
 
   const setupClient = async () => {
     const creds = await Auth.currentCredentials();
@@ -49,45 +51,48 @@ const App = () => {
   };
 
   const getUsers = async (limit = 6000) => {
-    try {
-      const users = await _identityClient
-        .listUsers({
-          UserPoolId: appConfig.cognitoUserPoolId,
-        })
-        .promise();
+    if (isAuthenticated) {
+      try {
+        const users = await _identityClient
+          .listUsers({
+            UserPoolId: appConfig.cognitoUserPoolId,
+          })
+          .promise();
 
-      usertoBeadded = [];
-      users.Users.map((ele) => {
-        if (ele.Username === "Bot" || ele.Username === "nurse") {
-          usertoBeadded.push(ele);
-          setUserList([...userlist, ele]);
-        }
-      });
-      return users.Users;
-    } catch (err) {
-      throw new Error(err);
+        usertoBeadded = [];
+        users.Users.map((ele) => {
+          if (ele.Username === "Bot" || ele.Username === "nurse") {
+            usertoBeadded.push(ele);
+            setUserList([...userlist, ele]);
+          }
+        });
+        return users.Users;
+      } catch (err) {
+        throw new Error(err);
+      }
     }
   };
 
   const onSendMessage = async (newMessage) => {
-    console.log("lksajdlkaslkja", activeChannel, activeCurrentChannel);
-    console.log(newMessage, member);
-    await sendChannelMessage(
-      activeChannel.ChannelArn,
-      newMessage.Content,
-      Persistence.PERSISTENT,
-      MessageType.STANDARD,
-      member
-    )
-      .then((resp) => {
-        setMessagesList([...messagesList, newMessage]);
-        // setMessagesList([]);
-        // getChannelMessage(activeChannel.ChannelArn);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    // userSignOut();
+    if (isAuthenticated) {
+      console.log("lksajdlkaslkja", activeChannel, activeCurrentChannel);
+      console.log(newMessage, member);
+      await sendChannelMessage(
+        activeChannel.ChannelArn,
+        newMessage.Content,
+        Persistence.PERSISTENT,
+        MessageType.STANDARD,
+        member
+      );
+      // setMessagesList([...messagesList, newMessage]);
+      // .then((resp) => {})
+      // .catch((err) => {
+      //   console.log(err);
+      // });
+    } else {
+      setMessagesList([...messagesList, newMessage]);
+      getUserDtails(newMessage);
+    }
 
     // body: {
     //   patientId: this.props.activePatient,
@@ -97,33 +102,81 @@ const App = () => {
   };
 
   const getChannelMessage = async (channelArn) => {
-    listChannelMessages(channelArn, member.userId)
-      .then((channelMessage) => {
-        setMessagesList(channelMessage.Messages);
-      })
-      .catch((err) => {
-        console.log("error", err);
-      });
+    if (isAuthenticated) {
+      listChannelMessages(channelArn, member.userId)
+        .then((channelMessage) => {
+          setMessagesList(channelMessage.Messages);
+        })
+        .catch((err) => {
+          console.log("error", err);
+        });
+    }
   };
 
   useEffect(() => {
+    // userSignOut();
     console.log("apappapa", isChatBoxOpen, isAuthenticated, member);
     // userSignOut();
-    if (!isAuthenticated) {
-      onUserSignIn();
-    } else {
+    if (isAuthenticated) {
+      // getUserDtails();
+      // onUserSignIn();
       getChannel();
+    } else {
+      getUserDtails(null);
     }
     setupClient();
   }, [isAuthenticated]);
 
   useEffect(() => {
-    // console.log("recevied message", messages);
-    setMessagesList([...messagesList, ...messages]);
+    if (isAuthenticated) {
+      setMessagesList([...messagesList, messages.pop()]);
+    }
   }, [messages]);
 
-  const onUserSignIn = async () => {
-    userSignIn("John", "@1Testmark")
+  const getUserDtails = async (message) => {
+    const body = {
+      message: message && message.Content ? message.Content : "Initiate Auth",
+    };
+    handleSendMessageToPatient(body)
+      .then((resp) => {
+        console.log("bot resp ", resp);
+        if (message && message.Content) {
+          setMessagesList([
+            ...messagesList,
+            message,
+            {
+              Content: resp?.data?.botResponse?.message,
+              Sender: { Name: "Bot" },
+            },
+          ]);
+        } else {
+          setMessagesList([
+            ...messagesList,
+            {
+              Content: resp?.data?.botResponse?.message,
+              Sender: { Name: "Bot" },
+            },
+          ]);
+        }
+
+        if (resp?.data?.botResponse?.dialogState === "ReadyForFulfillment") {
+          console.log(resp?.data?.botResponse?.slots);
+          setSlots(resp?.data?.botResponse?.slots);
+          onUserSignIn(
+            resp.data.botResponse.slots.phoneNumber,
+            resp.data.botResponse.slots.Otp
+          );
+        }
+      })
+      .catch((err) => {
+        console.log("bot err", err);
+      });
+  };
+
+  const onUserSignIn = async (userName, password) => {
+    password = "@1aT" + password;
+    console.log("signin", userName, password);
+    userSignIn(userName, password)
       .then((resp) => {
         console.log("user SignIn resp", member, resp);
         getChannel();
@@ -181,49 +234,43 @@ const App = () => {
 
   const joinChannel = async (channelArn) => {
     console.log("user list", userlist);
-    usertoBeadded.map(async (ele) => {
-      const userid = ele.Attributes.filter((e) => e.Name === "profile");
-      console.log("user list", userid);
-      const membership = await createChannelMembership(
-        channelArn,
-        `${appConfig.appInstanceArn}/user/${userid[0].Value}`,
-        member.userId
-      );
-      console.log("join channel called", membership);
-      if (membership) {
-        channelIdChangeHandler(activeCurrentChannel.ChannelArn);
-      }
-    });
+    if (isAuthenticated) {
+      usertoBeadded.map(async (ele) => {
+        const userid = ele.Attributes.filter((e) => e.Name === "profile");
+        console.log("user list", userid);
+        const membership = await createChannelMembership(
+          channelArn,
+          `${appConfig.appInstanceArn}/user/${userid[0].Value}`,
+          member.userId
+        );
+        console.log("join channel called", membership);
+        if (membership) {
+          channelIdChangeHandler(activeCurrentChannel.ChannelArn);
+        }
+      });
+    }
   };
 
   const channelIdChangeHandler = async (channelArn) => {
-    if (activeCurrentChannel.ChannelArn === channelArn) return;
-    const newMessages = await listChannelMessages(channelArn, member.userId);
-    const channel = await describeChannel(channelArn, member.userId);
-    setMessagesList(newMessages.Messages);
-    setActiveCurrentChannel(channel);
-    setActiveChannel(channel);
+    if (isAuthenticated) {
+      if (activeCurrentChannel.ChannelArn === channelArn) return;
+      const newMessages = await listChannelMessages(channelArn, member.userId);
+      const channel = await describeChannel(channelArn, member.userId);
+      // setMessagesList(newMessages.Messages);
+      setActiveCurrentChannel(channel);
+      setActiveChannel(channel);
+    }
   };
 
-  // const createdummyChannel = () => {
-  //   let userId = JSON.parse(localStorage.getItem("user"));
-  //   userId = userId.identityId;
-  //   console.log("userId", userId);
-  //   createChannel(
-  //     appConfig.appInstanceArn,
-  //     null,
-  //     "Test Dummay channel",
-  //     "UNRESTRICTED",
-  //     "PRIVATE",
-  //     userId
-  //   )
-  //     .then((res) => {
-  //       console.log("channel created safal", res);
-  //     })
-  //     .catch((err) => {
-  //       console.log("channel creation filed", err);
-  //     });
-  // };
+  const openChatBox = async (modalStatus) => {
+    setOpen(modalStatus);
+    if (isAuthenticated) {
+      getChannel();
+    } else {
+      getUserDtails();
+    }
+  };
+
   return (
     <div className="main">
       {isChatBoxOpen ? (
@@ -237,7 +284,7 @@ const App = () => {
         <img
           className="open-button"
           src="/chat.jpeg"
-          onClick={() => setOpen(true)}
+          onClick={() => openChatBox(true)}
           alt="no image"
         />
       )}
@@ -247,7 +294,10 @@ const App = () => {
             <h1>Msh Chat</h1>
           </div>
           <div className="chatMessages">
-            <Messages messages={messagesList} />
+            <Messages
+              isAuthenticated={isAuthenticated}
+              messages={messagesList}
+            />
           </div>
           <Input onSendMessage={onSendMessage} />
         </div>
