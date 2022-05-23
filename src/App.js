@@ -27,7 +27,7 @@ import { handleSendMessageToPatient } from "./api/api";
 const App = () => {
   let _identityClient;
   let usertoBeadded;
-  const { member, isAuthenticated, userSignIn } = useAuthContext();
+  const { member, isAuthenticated, userSignIn, userSignOut } = useAuthContext();
   const { messages } = useChatMessagingState();
   const { activeChannel, setActiveChannel } = useChatChannelState();
   const [isChatBoxOpen, setOpen] = useState(false);
@@ -36,6 +36,10 @@ const App = () => {
   const [activeCurrentChannel, setActiveCurrentChannel] = useState([]);
   const [userlist, setUserList] = useState([]);
   const [slots, setSlots] = useState({ phoneNumber: "", Otp: "" });
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  let tempArray = [];
 
   const setupClient = async () => {
     const creds = await Auth.currentCredentials();
@@ -73,34 +77,6 @@ const App = () => {
     }
   };
 
-  const onSendMessage = async (newMessage) => {
-    if (isAuthenticated) {
-      console.log("lksajdlkaslkja", activeChannel, activeCurrentChannel);
-      console.log(newMessage, member);
-      await sendChannelMessage(
-        activeChannel.ChannelArn,
-        newMessage.Content,
-        Persistence.PERSISTENT,
-        MessageType.STANDARD,
-        member
-      );
-      // setMessagesList([...messagesList, newMessage]);
-      // .then((resp) => {})
-      // .catch((err) => {
-      //   console.log(err);
-      // });
-    } else {
-      setMessagesList([...messagesList, newMessage]);
-      getUserDtails(newMessage);
-    }
-
-    // body: {
-    //   patientId: this.props.activePatient,
-    //   message: this.state.currentMessage,
-    //   userEmail,
-    // },
-  };
-
   const getChannelMessage = async (channelArn) => {
     if (isAuthenticated) {
       listChannelMessages(channelArn, member.userId)
@@ -114,15 +90,17 @@ const App = () => {
   };
 
   useEffect(() => {
-    // userSignOut();
-    console.log("apappapa", isChatBoxOpen, isAuthenticated, member);
-    // userSignOut();
+    const userCred = JSON.parse(localStorage.getItem("usercred"));
+    if (!userCred) {
+      localStorage.setItem(
+        "usercred",
+        JSON.stringify({ username: null, otp: null })
+      );
+    }
     if (isAuthenticated) {
-      // getUserDtails();
-      // onUserSignIn();
       getChannel();
     } else {
-      getUserDtails(null);
+      // getUserDtails(null);
     }
     setupClient();
   }, [isAuthenticated]);
@@ -133,9 +111,30 @@ const App = () => {
     }
   }, [messages]);
 
+  const getUserCread = async () => {
+    const userCread = JSON.parse(localStorage.getItem("usercred"));
+    // message && message.Content ? message.Content : "Initiate Auth",
+    if (!userCread.username) {
+      const body = {
+        message: {
+          Content: "Please Enter Phone number",
+          Sender: { Name: "Bot" },
+        },
+      };
+      localStorage.setItem(
+        "usercred",
+        JSON.stringify({ username: body.message, otp: null })
+      );
+    } else if (!userCread.otp) {
+    }
+  };
+
   const getUserDtails = async (message) => {
     const body = {
-      message: message && message.Content ? message.Content : "Initiate Auth",
+      message: {
+        Content: message && message.Content ? message.Content : "Initiate Auth",
+        Sender: { Name: "get Auth" },
+      },
     };
     handleSendMessageToPatient(body)
       .then((resp) => {
@@ -162,6 +161,7 @@ const App = () => {
         if (resp?.data?.botResponse?.dialogState === "ReadyForFulfillment") {
           console.log(resp?.data?.botResponse?.slots);
           setSlots(resp?.data?.botResponse?.slots);
+
           onUserSignIn(
             resp.data.botResponse.slots.phoneNumber,
             resp.data.botResponse.slots.Otp
@@ -173,13 +173,118 @@ const App = () => {
       });
   };
 
+  const onSendMessage = async (newMessage) => {
+    // console.log(newMessage);
+    tempArray = [...messagesList];
+    if (isAuthenticated) {
+      await sendChannelMessage(
+        activeChannel.ChannelArn,
+        newMessage.Content,
+        Persistence.PERSISTENT,
+        MessageType.STANDARD,
+        member
+      );
+    } else {
+      const userCred = JSON.parse(localStorage.getItem("usercred"));
+      tempArray.push(newMessage);
+      console.log("555555555", tempArray);
+      if (tempArray.length > 1) {
+        if (!userCred.username) {
+          userCred.username = newMessage.Content;
+          const body = {
+            message: {
+              Content: "Please enter OTP",
+              Sender: { Name: "Bot" },
+            },
+          };
+          localStorage.setItem("usercred", JSON.stringify(userCred));
+          tempArray.push(body.message);
+        } else if (!userCred.otp) {
+          userCred.otp = newMessage.Content;
+          localStorage.setItem("usercred", JSON.stringify(userCred));
+          // tempArray.push(body.message);
+        }
+      } else {
+        const userCred = JSON.parse(localStorage.getItem("usercred"));
+        if (!userCred.username) {
+          const body = {
+            message: {
+              Content: "Please Enter Phone number",
+              Sender: { Name: "Bot" },
+            },
+          };
+          tempArray.push(body.message);
+        }
+      }
+      setMessagesList(tempArray);
+      if (userCred.username && userCred.otp) {
+        onUserSignIn(userCred.username, userCred.otp);
+      }
+    }
+  };
+
   const onUserSignIn = async (userName, password) => {
     password = "@1aT" + password;
     console.log("signin", userName, password);
-    userSignIn(userName, password)
+    await userSignIn(userName, password)
       .then((resp) => {
-        console.log("user SignIn resp", member, resp);
-        getChannel();
+        // resp = JSON.stringify(resp);
+        console.log("================, resp", resp);
+        if (resp === "Invalid username or password") {
+          const messageData = {
+            Content: "Incorrect username or password",
+            Sender: { Name: "Bot" },
+          };
+          tempArray.push(messageData);
+          const body = {
+            message: {
+              Content: "Please Enter Phone number",
+              Sender: { Name: "Bot" },
+            },
+          };
+          tempArray.push(body.message);
+          setMessagesList([...tempArray]);
+          localStorage.setItem(
+            "usercred",
+            JSON.stringify({ username: null, otp: null })
+          );
+        } else if (resp === "User does not exist") {
+          const messageData = {
+            Content: "User does not exist.",
+            Sender: { Name: "Bot" },
+          };
+          tempArray.push(messageData);
+          const body = {
+            message: {
+              Content: "Please Enter Phone number",
+              Sender: { Name: "Bot" },
+            },
+          };
+          tempArray.push(body.message);
+          setMessagesList([...tempArray]);
+        } else {
+          getChannel();
+          localStorage.removeItem("usercred");
+          // const messageData = {
+          //   Content: "Incorrect username or password.",
+          //   Sender: { Name: "Bot" },
+          // };
+          // tempArray.push(messageData);
+          // const body = {
+          //   message: {
+          //     Content: "Please Enter Phone number",
+          //     Sender: { Name: "Bot" },
+          //   },
+          // };
+          // tempArray.push(body.message);
+          // setMessagesList([...tempArray]);
+          // localStorage.setItem(
+          //   "usercred",
+          //   JSON.stringify({ username: null, otp: null })
+          // );
+          // setLoading(false);
+          // openChatBox(true);
+        }
       })
       .catch((err) => {
         console.log("user signIn error", err);
@@ -210,10 +315,12 @@ const App = () => {
   };
 
   const onCreateChannel = async () => {
+    console.log("createchannel", member);
+    if (!isAuthenticated) return;
     const channelArn = await createChannel(
       appConfig.appInstanceArn,
       null,
-      "Test Channels Name",
+      member.username,
       "UNRESTRICTED",
       "PRIVATE",
       member.userId
@@ -266,9 +373,28 @@ const App = () => {
     setOpen(modalStatus);
     if (isAuthenticated) {
       getChannel();
-    } else {
-      getUserDtails();
     }
+  };
+
+  const clearStates = async () => {
+    setMessagesList([]);
+    setCurrentChannelList([]);
+    setActiveCurrentChannel([]);
+    setUserList([]);
+    setSlots([]);
+  };
+
+  const handleSignOut = async () => {
+    // setOpen(false);
+    await userSignOut();
+    window.localStorage.clear();
+    clearStates();
+    const logOutMessage = {
+      Content: "User Logout Successfully",
+      Sender: { Name: "Bot" },
+    };
+    setMessagesList([logOutMessage]);
+    console.log("logout called", messagesList);
   };
 
   return (
@@ -276,14 +402,14 @@ const App = () => {
       {isChatBoxOpen ? (
         <img
           className="open-button"
-          src="/cancle.png"
+          src="https://cdn1.iconfinder.com/data/icons/social-messaging-ui-color-round-1/254000/45-512.png"
           onClick={() => setOpen(false)}
           alt="no image"
         />
       ) : (
         <img
           className="open-button"
-          src="/chat.jpeg"
+          src="https://static.vecteezy.com/system/resources/previews/000/425/269/non_2x/vector-chat-icon.jpg"
           onClick={() => openChatBox(true)}
           alt="no image"
         />
@@ -291,15 +417,41 @@ const App = () => {
       {isChatBoxOpen && (
         <div className="App">
           <div className="App-header">
+            <div></div>
             <h1>Msh Chat</h1>
+            {isAuthenticated ? (
+              <div
+                onClick={handleSignOut}
+                style={{
+                  color: "#fff",
+                  paddingRight: "10px",
+                  cursor: "pointer",
+                  fontSize: "15px",
+                }}
+              >
+                Logout
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
           <div className="chatMessages">
             <Messages
               isAuthenticated={isAuthenticated}
               messages={messagesList}
             />
-          </div>
-          <Input onSendMessage={onSendMessage} />
+          </div>{" "}
+          {loading ? (
+            <div>
+              {errorMessage === "" ? (
+                <div>Loading...</div>
+              ) : (
+                <div style={{ color: "red" }}>{errorMessage}</div>
+              )}
+            </div>
+          ) : (
+            <Input onSendMessage={onSendMessage} />
+          )}
         </div>
       )}
     </div>

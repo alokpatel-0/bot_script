@@ -69,13 +69,6 @@ const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(essentialCreds));
     return essentialCreds;
   };
-  // const getAwsCredentialsFromCognito = async () => {
-  //   const creds = await Auth.currentCredentials();
-  //   const essentialCreds = await Auth.essentialCredentials(creds);
-  //   AWS.config.region = appConfig.region;
-  //   AWS.config.credentials = essentialCreds;
-  //   return essentialCreds;
-  // };
 
   const setAuthenticatedUserFromCognito = async () => {
     setUseCognitoIdp(true);
@@ -101,33 +94,6 @@ const AuthProvider = ({ children }) => {
       });
     getAwsCredentialsFromCognito();
   };
-  // const setAuthenticatedUserFromCognito = () => {
-  //   setUseCognitoIdp(true);
-  //   Auth.currentUserInfo()
-  //     .then((curUser) => {
-  //       setMember({ username: curUser.username, userId: curUser.id });
-  //       if (curUser.attributes?.profile === "none") {
-  //         updateUserAttributes(curUser.id);
-  //         // Once we set attribute let's have user relogin to refresh SigninHookFn trigger.
-  //         setIsAuthenticated(false);
-  //       } else {
-  //         setAnonymous(false);
-  //         setIsAuthenticated(true);
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       console.log(`Failed to set authenticated user! ${err}`);
-  //     });
-  //   getAwsCredentialsFromCognito();
-  // };
-
-  //   const userSignIn = (username, password) => {
-  //     Auth.signIn({ username, password })
-  //       .then(setAuthenticatedUserFromCognito)
-  //       .catch((err) => {
-  //         console.log(err);
-  //       });
-  //   };
 
   const userSignIn = async (username, password) => {
     console.log("SignInCalled", username, password);
@@ -140,7 +106,8 @@ const AuthProvider = ({ children }) => {
       })
       .catch((err) => {
         console.log("step 1", err);
-        return err;
+        return "Invalid username or password";
+        // return err;
       });
   };
 

@@ -23,13 +23,6 @@ AWS.config.update({
 
 configureAmplify();
 
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-//   document.getElementById("root-cra")
-// );
-
 document.addEventListener("DOMContentLoaded", (_event) => {
   ReactDOM.render(<Chat />, document.getElementById("root"));
 });

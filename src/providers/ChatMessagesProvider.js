@@ -97,18 +97,6 @@ const MessagingProvider = ({ children }) => {
     };
   }, [isAuthenticated]);
 
-  // useEffect(() => {
-  //   if (activeChannelMemberships.length > 0) {
-  //     renderDefaultChannelPresence();
-  //   }
-  // }, [activeChannel.ChannelArn]);
-
-  // useEffect(() => {
-  //   if (activeChannelMemberships.length > 0) {
-  //     refreshChannelPresence();
-  //   }
-  // }, [activeChannelMemberships]);
-
   function buildPresenceFromChannelMetadata() {
     const presenceMap = toPresenceMap(activeChannel.Metadata);
     return activeChannelMembershipsRef.current

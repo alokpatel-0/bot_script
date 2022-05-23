@@ -1,13 +1,15 @@
 /* eslint-disable jsx-a11y/alt-text */
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 const Messages = ({ messages, isAuthenticated }) => {
+  const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
-    this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    console.log("this is message component", messages);
+    // console.log("this is message component", messages);
+    scrollToBottom();
   }, [messages]);
 
   const renderMessage = (message) => {
@@ -20,13 +22,19 @@ const Messages = ({ messages, isAuthenticated }) => {
           <div className="userDiv">
             <div className="text">{Content}</div>
             <span>
-              <img className="userImage" src="download.jpeg" />
+              <img
+                className="userImage"
+                src="https://icons.veryicon.com/png/o/internet--web/prejudice/user-128.png"
+              />
             </span>
           </div>
         ) : (
           <div className="responseDiv">
             <span>
-              <img className="profileImage" src="download.jpeg" />
+              <img
+                className="profileImage"
+                src="https://icons.veryicon.com/png/o/internet--web/prejudice/user-128.png"
+              />
             </span>
             <div className="bottext">{Content}</div>
           </div>
@@ -37,10 +45,7 @@ const Messages = ({ messages, isAuthenticated }) => {
   return (
     <>
       <div>{messages.map((m) => renderMessage(m))}</div>
-      <div
-        style={{ float: "left", clear: "both" }}
-        ref={(el) => scrollToBottom}
-      ></div>
+      <div style={{ float: "left", clear: "both" }} ref={messagesEndRef}></div>
     </>
   );
 };

@@ -30,7 +30,7 @@ const Input = ({ onSendMessage }) => {
         <input
           className="sendbutton"
           type="image"
-          src="blue.png"
+          src="https://snapchat-download.net/wp-content/uploads/2015/10/snapchat-blue-bordered-arrow-icon-mean.png"
           alt="Submit"
         />
       </form>
