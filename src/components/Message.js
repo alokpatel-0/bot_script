@@ -1,24 +1,37 @@
 /* eslint-disable jsx-a11y/alt-text */
 import React, { useEffect, useRef } from "react";
 
-const Messages = ({ messages, isAuthenticated }) => {
+const Messages = ({
+  messages,
+  loadMoreChat,
+  nextToken,
+  scrollEnable,
+  isAuthenticated,
+}) => {
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (scrollEnable) {
+      scrollToBottom();
+    }
   }, [messages]);
 
+  const loadMore = async () => {
+    loadMoreChat({ isLoadMore: false });
+  };
+
   const renderMessage = (message) => {
+    const messageId = message?.MessageId;
     const Content = message?.Content;
     const Name = message?.Sender?.Name;
     return (
       <>
         {" "}
         {Name !== "Bot" && Name !== "nurse" ? (
-          <div className="userDiv">
+          <div key={messageId} className="userDiv">
             <div className="text">{Content}</div>
             <span>
               <img
@@ -28,7 +41,7 @@ const Messages = ({ messages, isAuthenticated }) => {
             </span>
           </div>
         ) : (
-          <div className="responseDiv">
+          <div key={messageId} className="responseDiv">
             <span>
               <img
                 className="profileImage"
@@ -43,6 +56,11 @@ const Messages = ({ messages, isAuthenticated }) => {
   };
   return (
     <>
+      {isAuthenticated && nextToken && (
+        <div onClick={loadMore}>
+          <button className="onload">Load more</button>
+        </div>
+      )}
       <div>{messages.map((m) => renderMessage(m))}</div>
       <div style={{ float: "left", clear: "both" }} ref={messagesEndRef}></div>
     </>

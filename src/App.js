@@ -35,6 +35,8 @@ const App = () => {
   const [activeCurrentChannel, setActiveCurrentChannel] = useState([]);
   const [userlist, setUserList] = useState([]);
   const [reLogin, setReLogin] = useState(false);
+  const [nextToken, setNextToken] = useState("");
+  const [scrollEnable, setScrollEnable] = useState(true);
   const [slots, setSlots] = useState({ phoneNumber: "", Otp: "" });
 
   let tempArray = [];
@@ -79,6 +81,8 @@ const App = () => {
     if (isAuthenticated) {
       listChannelMessages(channelArn, member.userId)
         .then((channelMessage) => {
+          console.log("channelMessagechannelMessage", channelMessage);
+          setNextToken(channelMessage.NextToken);
           setMessagesList([...messagesList, ...channelMessage.Messages]);
         })
         .catch((err) => {
@@ -176,6 +180,7 @@ const App = () => {
   };
 
   const onSendMessage = async (newMessage) => {
+    setScrollEnable(true);
     // console.log(newMessage);
     if (newMessage.Content) {
       tempArray = [...messagesList];
@@ -426,6 +431,26 @@ const App = () => {
     console.log("logout called", messagesList);
   };
 
+  const loadMoreChat = async (params) => {
+    if (!isAuthenticated) return;
+    setScrollEnable(params.isLoadMore);
+    console.log("load chat called");
+    if (nextToken == null) {
+      console.log("No new messages");
+      return;
+    }
+
+    const oldMessages = await listChannelMessages(
+      activeChannel.ChannelArn,
+      member.userId,
+      nextToken
+    );
+    setNextToken(oldMessages.NextToken);
+    const newMessages = [...oldMessages.Messages, ...messagesList];
+
+    setMessagesList(newMessages);
+  };
+
   return (
     <div className="main">
       {isChatBoxOpen ? (
@@ -466,6 +491,9 @@ const App = () => {
           </div>
           <div className="chatMessages">
             <Messages
+              scrollEnable={scrollEnable}
+              nextToken={nextToken}
+              loadMoreChat={loadMoreChat}
               isAuthenticated={isAuthenticated}
               messages={messagesList}
             />
