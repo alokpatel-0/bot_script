@@ -1,4 +1,4 @@
-import { Component, useState } from "react";
+import { useState } from "react";
 import React from "react";
 
 const Input = ({ onSendMessage }) => {

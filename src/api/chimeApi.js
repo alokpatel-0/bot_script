@@ -111,6 +111,7 @@ async function listChannelMessages(channelArn, userId, nextToken = null) {
     ChannelArn: channelArn,
     NextToken: nextToken,
     ChimeBearer: chimeBearerArn,
+    MaxResults: 10,
   };
 
   const request = (await chimeMessagingClient()).listChannelMessages(params);

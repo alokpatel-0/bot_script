@@ -10,7 +10,6 @@ import {
   createChannel,
   createChannelMembership,
   describeChannel,
-  getChannelMessage,
   listChannelMembershipsForAppInstanceUser,
   listChannelMessages,
   MessageType,
@@ -35,9 +34,8 @@ const App = () => {
   const [currentChannelList, setCurrentChannelList] = useState([]);
   const [activeCurrentChannel, setActiveCurrentChannel] = useState([]);
   const [userlist, setUserList] = useState([]);
+  const [reLogin, setReLogin] = useState(false);
   const [slots, setSlots] = useState({ phoneNumber: "", Otp: "" });
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   let tempArray = [];
 
@@ -81,7 +79,7 @@ const App = () => {
     if (isAuthenticated) {
       listChannelMessages(channelArn, member.userId)
         .then((channelMessage) => {
-          setMessagesList(channelMessage.Messages);
+          setMessagesList([...messagesList, ...channelMessage.Messages]);
         })
         .catch((err) => {
           console.log("error", err);
@@ -89,6 +87,10 @@ const App = () => {
     }
   };
 
+  window.onbeforeunload = (e) => {
+    localStorage.removeItem("usercred");
+    return;
+  };
   useEffect(() => {
     const userCred = JSON.parse(localStorage.getItem("usercred"));
     if (!userCred) {
@@ -175,50 +177,72 @@ const App = () => {
 
   const onSendMessage = async (newMessage) => {
     // console.log(newMessage);
-    tempArray = [...messagesList];
-    if (isAuthenticated) {
-      await sendChannelMessage(
-        activeChannel.ChannelArn,
-        newMessage.Content,
-        Persistence.PERSISTENT,
-        MessageType.STANDARD,
-        member
-      );
-    } else {
-      const userCred = JSON.parse(localStorage.getItem("usercred"));
-      tempArray.push(newMessage);
-      console.log("555555555", tempArray);
-      if (tempArray.length > 1) {
-        if (!userCred.username) {
-          userCred.username = newMessage.Content;
-          const body = {
-            message: {
-              Content: "Please enter OTP",
-              Sender: { Name: "Bot" },
-            },
-          };
-          localStorage.setItem("usercred", JSON.stringify(userCred));
-          tempArray.push(body.message);
-        } else if (!userCred.otp) {
-          userCred.otp = newMessage.Content;
-          localStorage.setItem("usercred", JSON.stringify(userCred));
-          // tempArray.push(body.message);
-        }
+    if (newMessage.Content) {
+      tempArray = [...messagesList];
+      if (isAuthenticated) {
+        await sendChannelMessage(
+          activeChannel.ChannelArn,
+          newMessage.Content,
+          Persistence.PERSISTENT,
+          MessageType.STANDARD,
+          member
+        );
       } else {
         const userCred = JSON.parse(localStorage.getItem("usercred"));
-        if (!userCred.username) {
-          const body = {
-            message: {
-              Content: "Please Enter Phone number",
-              Sender: { Name: "Bot" },
-            },
-          };
-          tempArray.push(body.message);
+        tempArray.push(newMessage);
+        console.log("555555555", tempArray);
+        if (tempArray.length > 1 && !reLogin) {
+          if (!userCred.username) {
+            if (/^[6-9]\d{9}$/.test(newMessage.Content)) {
+              userCred.username = newMessage.Content;
+              const body = {
+                message: {
+                  Content: "Please enter OTP",
+                  Sender: { Name: "Bot" },
+                },
+              };
+              localStorage.setItem("usercred", JSON.stringify(userCred));
+              tempArray.push(body.message);
+            } else {
+              const body = {
+                message: {
+                  Content: "Please enter valid phone number",
+                  Sender: { Name: "Bot" },
+                },
+              };
+              tempArray.push(body.message);
+            }
+          } else if (!userCred.otp) {
+            if (/^[0-9]{1,6}$/.test(newMessage.Content)) {
+              userCred.otp = newMessage.Content;
+              localStorage.setItem("usercred", JSON.stringify(userCred));
+            } else {
+              const body = {
+                message: {
+                  Content: "Please enter valid OTP",
+                  Sender: { Name: "Bot" },
+                },
+              };
+              tempArray.push(body.message);
+            }
+          }
+        } else {
+          setReLogin(false);
+          const userCred = JSON.parse(localStorage.getItem("usercred"));
+          if (userCred && !userCred.username) {
+            const body = {
+              message: {
+                Content: "Please Enter Phone number",
+                Sender: { Name: "Bot" },
+              },
+            };
+            tempArray.push(body.message);
+          }
         }
-      }
-      setMessagesList(tempArray);
-      if (userCred.username && userCred.otp) {
-        onUserSignIn(userCred.username, userCred.otp);
+        setMessagesList(tempArray);
+        if (userCred && userCred.username && userCred.otp) {
+          onUserSignIn(userCred.username, userCred.otp);
+        }
       }
     }
   };
@@ -228,8 +252,6 @@ const App = () => {
     console.log("signin", userName, password);
     await userSignIn(userName, password)
       .then((resp) => {
-        // resp = JSON.stringify(resp);
-        console.log("================, resp", resp);
         if (resp === "Invalid username or password") {
           const messageData = {
             Content: "Incorrect username or password",
@@ -377,17 +399,24 @@ const App = () => {
   };
 
   const clearStates = async () => {
+    tempArray = [];
     setMessagesList([]);
     setCurrentChannelList([]);
     setActiveCurrentChannel([]);
     setUserList([]);
+    // setActiveChannel();
     setSlots([]);
   };
 
   const handleSignOut = async () => {
     // setOpen(false);
     await userSignOut();
+    setReLogin(true);
     window.localStorage.clear();
+    localStorage.setItem(
+      "usercred",
+      JSON.stringify({ username: null, otp: null })
+    );
     clearStates();
     const logOutMessage = {
       Content: "User Logout Successfully",
@@ -418,7 +447,7 @@ const App = () => {
         <div className="App">
           <div className="App-header">
             <div></div>
-            <h1>Msh Chat</h1>
+            <h1>MSH</h1>
             {isAuthenticated ? (
               <div
                 onClick={handleSignOut}
@@ -440,18 +469,8 @@ const App = () => {
               isAuthenticated={isAuthenticated}
               messages={messagesList}
             />
-          </div>{" "}
-          {loading ? (
-            <div>
-              {errorMessage === "" ? (
-                <div>Loading...</div>
-              ) : (
-                <div style={{ color: "red" }}>{errorMessage}</div>
-              )}
-            </div>
-          ) : (
-            <Input onSendMessage={onSendMessage} />
-          )}
+          </div>
+          <Input onSendMessage={onSendMessage} />
         </div>
       )}
     </div>

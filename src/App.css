@@ -50,7 +50,7 @@
 
 .text {
   width: fit-content;
-  max-width: 200px;
+  max-width: 250px;
   margin-left: auto;
   padding: 3px;
   border-radius: 4px;
@@ -61,11 +61,14 @@
   margin-right: 33px;
   word-break: break-word;
   word-wrap: break-word;
+  margin-bottom: 15px;
+  text-align: start;
 }
 
 .bottext {
   width: fit-content;
-  max-width: 200px;
+  max-width: 250px;
+  min-width: 250px;
   margin: 8px;
   padding: 3px;
   border-radius: 4px;
@@ -77,6 +80,8 @@
   margin-left: 40px;
   word-break: break-word;
   word-wrap: break-word;
+  margin-bottom: 15px;
+  text-align: start;
 }
 
 form {
@@ -130,6 +135,7 @@ form {
   width: 33px;
   position: absolute;
   left: 6px;
+  margin-top: 10px;
 }
 
 .userImage {
@@ -137,7 +143,7 @@ form {
   width: 33px;
   position: absolute;
   right: 0px;
-  margin-top: -29px;
+  margin-top: -43px;
 }
 .responseDiv {
   display: flex;

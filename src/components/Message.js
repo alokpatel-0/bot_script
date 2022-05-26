@@ -8,7 +8,6 @@ const Messages = ({ messages, isAuthenticated }) => {
   };
 
   useEffect(() => {
-    // console.log("this is message component", messages);
     scrollToBottom();
   }, [messages]);
 
