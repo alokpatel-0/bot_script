@@ -11,6 +11,6 @@ const appConfig = {
   attachments_s3_bucket_name: "",
   accessKeyId: "",
   secretAccessKey: "",
-  apiVersion: "",
+  apiVersion: "9999",
 };
 export default appConfig;
