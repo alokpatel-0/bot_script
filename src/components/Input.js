@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 
-const Input = ({ onSendMessage }) => {
+const Input = ({ onSendMessage,show}) => {
   const [messageVal, setMessageVal] = useState("");
 
   const onSubmit = (e) => {
@@ -11,13 +11,14 @@ const Input = ({ onSendMessage }) => {
       Sender: { Name: "Anonymous" },
     });
     setMessageVal("");
+    console.log("showiwieiwi sjasn",show)
   };
 
   return (
     <div className="Input">
       <form
         onSubmit={(e) => onSubmit(e)}
-        style={{ position: "relative", top: 0 }}
+        style={{ position: "relative", top: 0, display: show ? "none" : "flex" }}
       >
         <input
           className="textInput"
@@ -26,6 +27,7 @@ const Input = ({ onSendMessage }) => {
           type="text"
           placeholder="Enter your message"
           autoFocus={true}
+
         />
         <input
           className="sendbutton"

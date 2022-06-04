@@ -64,7 +64,7 @@ const Messages = ({
       <div>{messages.map((m) => renderMessage(m))}</div>
       <div style={{ float: "left", clear: "both" }} ref={messagesEndRef}></div>
     </>
-  );
-};
+  )
+}
 
 export default Messages;

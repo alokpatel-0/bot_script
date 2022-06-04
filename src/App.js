@@ -5,6 +5,7 @@ import Auth from "@aws-amplify/auth";
 import * as AWS from "aws-sdk";
 import Messages from "./components/Message";
 import Input from "./components/Input";
+import SubmitForm from "./components/submitForm";
 import appConfig from "./config/aws_config";
 import {
   createChannel,
@@ -38,6 +39,8 @@ const App = () => {
   const [nextToken, setNextToken] = useState("");
   const [scrollEnable, setScrollEnable] = useState(true);
   const [slots, setSlots] = useState({ phoneNumber: "", Otp: "" });
+  const [option, setOption] = useState();
+  const [show, setShow] = useState(true);
 
   let tempArray = [];
 
@@ -256,7 +259,8 @@ const App = () => {
     password = "@1aT" + password;
     console.log("signin", userName, password);
     await userSignIn(userName, password)
-      .then((resp) => {
+      .then(async(resp) => {
+        console.log('$$$$$$$$$$$$$$$$$$$$$$$$',resp);
         if (resp === "Invalid username or password") {
           const messageData = {
             Content: "Incorrect username or password",
@@ -290,7 +294,8 @@ const App = () => {
           tempArray.push(body.message);
           setMessagesList([...tempArray]);
         } else {
-          getChannel();
+          console.log('called');
+          getChannel()
           localStorage.removeItem("usercred");
           // const messageData = {
           //   Content: "Incorrect username or password.",
@@ -332,10 +337,35 @@ const App = () => {
           );
           setCurrentChannelList([...currentChannelList, userChannel]);
           setActiveChannel(...userChannel);
-          await getChannelMessage(userChannel[0].ChannelArn);
+          if(option=='firstoption'){
+            setMessagesList([...messagesList,{Content:'View my Schedule', Sender:{Name: member.userId}}])
+            await sendChannelMessage(
+              userChannel[0].ChannelArn,
+              'View my Schedule',
+              Persistence.PERSISTENT,
+              MessageType.STANDARD,
+              member
+            );
+            setOption('')
+          }
+          else if(option=='secondoption'){
+            setMessagesList([...messagesList,{Content:'Need help with anything else', Sender:{Name: member.userId}}])
+            await sendChannelMessage(
+              userChannel[0].ChannelArn,
+              'Need help with anything else',
+              Persistence.PERSISTENT,
+              MessageType.STANDARD,
+              member
+            );
+            setOption('')
+          }
+        else{
+          await getChannelMessage(userChannel[0].ChannelArn);}
           console.log("channel state", currentChannelList);
         }
+        
       })
+      
       .catch((err) => {
         console.log(err);
       });
@@ -403,6 +433,8 @@ const App = () => {
     }
   };
 
+
+
   const clearStates = async () => {
     tempArray = [];
     setMessagesList([]);
@@ -428,7 +460,32 @@ const App = () => {
       Sender: { Name: "Bot" },
     };
     setMessagesList([logOutMessage]);
+    console.log(show,"showwww")
     console.log("logout called", messagesList);
+
+  };
+
+  const ViewSchedule = async () => {
+    const schedule = {
+      Content: "Please enter your phone number",
+      Sender: { Name: "Bot" },
+    };
+    setMessagesList([schedule]);
+    setOption('firstoption')
+    setShow(false)
+    console.log(show,"showwww")
+  };
+
+
+  const needHelp = async () => {
+    const help = {
+      Content: "Please enter your phone number",
+      Sender: { Name: "Bot" },
+    };
+    setMessagesList([help]);
+    setOption('secondoption')
+    setShow(false)
+    
   };
 
   const loadMoreChat = async (params) => {
@@ -489,7 +546,28 @@ const App = () => {
               <div></div>
             )}
           </div>
+          
           <div className="chatMessages">
+            <div>
+           
+            {!isAuthenticated &&(
+            <>
+             <div className="responseDiv">
+            <span>
+              <img
+                className="profileImage"
+                src="https://icons.veryicon.com/png/o/internet--web/prejudice/user-128.png"
+              />
+            </span>
+            <div className="bottext" style={{ display: show ? "block" : "none" }}>Welcome,How Can i assist you?</div>
+            </div>
+            <button className="chooseOption" onClick={ViewSchedule} style={{ display: show ? "block" : "none" }}>View My Schedule</button>
+            <div></div>
+            <button className="chooseOption" onClick={needHelp} style={{ display: show ? "block" : "none" }}>Need Help with anything else</button>
+            </>
+            )}
+            </div>
+           
             <Messages
               scrollEnable={scrollEnable}
               nextToken={nextToken}
@@ -498,8 +576,13 @@ const App = () => {
               messages={messagesList}
             />
           </div>
-          <Input onSendMessage={onSendMessage} />
+          {/* <SubmitForm  onSendMessage={onSendMessage} show={show} /> */}
+
+          <Input onSendMessage={onSendMessage} show={show} />
+          
+          
         </div>
+        
       )}
     </div>
   );

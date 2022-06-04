@@ -94,6 +94,38 @@ form {
   /* margin-top: 0px; */
 }
 
+.submitform{
+  display: block !important;
+  
+}
+.submitForms{
+  display: block;
+  background-color: rgb(204, 228, 236);
+  border-radius: 5px;
+  width: 316px;
+  margin: 20px auto;
+  padding: 20px;
+  top: -8px;
+  left: 5px;
+  height: 390px;
+
+}
+.content{
+  width: 300px;
+    border: 1px solid #ccc;
+    background: #FFF;
+    margin: 0 0 5px;
+    padding: 10px;
+    line-height: 20.5px;
+}
+
+fieldset {
+  border: medium none !important;
+  margin: 0 0 10px;
+  min-width: 100%;
+  padding: 0;
+  width: 100%;}
+
 .textInput {
   border: none;
   background: transparent;
@@ -165,4 +197,33 @@ form {
   flex-flow: column;
   max-width: 360px;
   margin-top: 11px;
+}
+
+.chooseOption{
+  width: auto;
+  padding: 14px 54px;
+  margin: 5px;
+    border-radius: 15px;
+    min-width: 35px;
+    font-size: 14px;
+    letter-spacing: normal;
+    border-color: #42a5f5 !important;
+    cursor: pointer;
+    line-height: 20.5px;
+}
+
+#contactsubmit{
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: rgb(143, 182, 255);
+  color: #FFF;
+  margin: 0 0 5px;
+  padding: 10px;
+  font-size: 15px;
+}
+
+#contactsubmit:hover {
+  background: #7293ff;
+  transition: background-color 0.3s ease-in-out;
 }
