@@ -21,7 +21,7 @@ import {
   useChatChannelState,
   useChatMessagingState,
 } from "./providers/ChatMessagesProvider";
-import { handleSendMessageToPatient } from "./api/api";
+import { getPatientSchedule, handleSendMessageToPatient } from "./api/api";
 
 const App = () => {
   let _identityClient;
@@ -38,6 +38,7 @@ const App = () => {
   const [nextToken, setNextToken] = useState("");
   const [scrollEnable, setScrollEnable] = useState(true);
   const [slots, setSlots] = useState({ phoneNumber: "", Otp: "" });
+  const [patientData, setPatientData] = useState();
 
   let tempArray = [];
 
@@ -97,6 +98,21 @@ const App = () => {
   };
   useEffect(() => {
     const userCred = JSON.parse(localStorage.getItem("usercred"));
+    const userDetails = JSON.parse(localStorage.getItem("userId"));
+
+    if (isAuthenticated && userDetails.username) {
+      getPatientSchedule({ mobileNumber: userDetails.username })
+        .then((user) => {
+          if (user && user.data !== "No data found") {
+            setPatientData(user.data.patient);
+          } else {
+            setPatientData({});
+          }
+        })
+        .catch((err) => {
+          console.log("this is error", err);
+        });
+    }
     if (!userCred) {
       localStorage.setItem(
         "usercred",
@@ -117,80 +133,30 @@ const App = () => {
     }
   }, [messages]);
 
-  const getUserCread = async () => {
-    const userCread = JSON.parse(localStorage.getItem("usercred"));
-    // message && message.Content ? message.Content : "Initiate Auth",
-    if (!userCread.username) {
-      const body = {
-        message: {
-          Content: "Please Enter Phone number",
-          Sender: { Name: "Bot" },
-        },
-      };
-      localStorage.setItem(
-        "usercred",
-        JSON.stringify({ username: body.message, otp: null })
-      );
-    } else if (!userCread.otp) {
-    }
-  };
-
-  const getUserDtails = async (message) => {
-    const body = {
-      message: {
-        Content: message && message.Content ? message.Content : "Initiate Auth",
-        Sender: { Name: "get Auth" },
-      },
-    };
-    handleSendMessageToPatient(body)
-      .then((resp) => {
-        console.log("bot resp ", resp);
-        if (message && message.Content) {
-          setMessagesList([
-            ...messagesList,
-            message,
-            {
-              Content: resp?.data?.botResponse?.message,
-              Sender: { Name: "Bot" },
-            },
-          ]);
-        } else {
-          setMessagesList([
-            ...messagesList,
-            {
-              Content: resp?.data?.botResponse?.message,
-              Sender: { Name: "Bot" },
-            },
-          ]);
-        }
-
-        if (resp?.data?.botResponse?.dialogState === "ReadyForFulfillment") {
-          console.log(resp?.data?.botResponse?.slots);
-          setSlots(resp?.data?.botResponse?.slots);
-
-          onUserSignIn(
-            resp.data.botResponse.slots.phoneNumber,
-            resp.data.botResponse.slots.Otp
-          );
-        }
-      })
-      .catch((err) => {
-        console.log("bot err", err);
-      });
-  };
-
   const onSendMessage = async (newMessage) => {
     setScrollEnable(true);
-    // console.log(newMessage);
     if (newMessage.Content) {
       tempArray = [...messagesList];
       if (isAuthenticated) {
+        let userData = null;
+        if (patientData && patientData.patientDetails) {
+          userData = {
+            Metadata: JSON.stringify({
+              isMeetingInfo: false,
+              patientDetails: {
+                ...patientData.patientDetails,
+                _id: patientData._id,
+              },
+            }),
+          };
+        }
         await sendChannelMessage(
           activeChannel.ChannelArn,
           newMessage.Content,
           Persistence.PERSISTENT,
           MessageType.STANDARD,
-          member
+          member,
+          userData
         );
       } else {
         const userCred = JSON.parse(localStorage.getItem("usercred"));
@@ -292,25 +258,6 @@ const App = () => {
         } else {
           getChannel();
           localStorage.removeItem("usercred");
-          // const messageData = {
-          //   Content: "Incorrect username or password.",
-          //   Sender: { Name: "Bot" },
-          // };
-          // tempArray.push(messageData);
-          // const body = {
-          //   message: {
-          //     Content: "Please Enter Phone number",
-          //     Sender: { Name: "Bot" },
-          //   },
-          // };
-          // tempArray.push(body.message);
-          // setMessagesList([...tempArray]);
-          // localStorage.setItem(
-          //   "usercred",
-          //   JSON.stringify({ username: null, otp: null })
-          // );
-          // setLoading(false);
-          // openChatBox(true);
         }
       })
       .catch((err) => {

@@ -7,15 +7,27 @@ export const handleSendMessageToPatient = async (data) => {
     const response = await axios.post(
       endPoints.apiUrl + `/daffo/dispatch/userResponse`,
       data
-      // {
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     //   Authorization: `Bearer ${data.token}`,
-      //   },
-      // }
     );
     return response;
   } catch (error) {
+    return error && error.response;
+  }
+};
+
+export const getPatientSchedule = async (data) => {
+  try {
+    const response = await axios.post(
+      endPoints.apiUrl + "/daffo/dispatch/getPatientSchedule",
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.log("error", JSON.stringify(error));
     return error && error.response;
   }
 };
